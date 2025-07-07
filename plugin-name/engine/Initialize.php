@@ -120,19 +120,41 @@ class Initialize {
 			return;
 		}
 
-		$temp = new $classtovalidate;
-		\add_filter(
-			'plugin_name_instance_' . $classtovalidate,
-			function() use ( $temp ) {
-				return $temp;
+		if ( strpos( $classtovalidate, 'Widgets' ) !== false ) {
+			\add_action(
+				'widgets_init',
+				function() use ( $classtovalidate ) {
+					$temp = new $classtovalidate;
+
+					if ( !\method_exists( $temp, 'initialize' ) ) {
+						return;
+					}
+
+					$temp->initialize();
+					\add_filter(
+						'plugin_name_instance_' . $classtovalidate,
+						function() use ( $temp ) {
+							return $temp;
+						}
+					);
+				}
+			);
+		} else {
+			$temp = new $classtovalidate;
+
+			if ( !\method_exists( $temp, 'initialize' ) ) {
+				return;
 			}
-		);
 
-		if ( !\method_exists( $temp, 'initialize' ) ) {
-			return;
+			$temp->initialize();
+
+			\add_filter(
+				'plugin_name_instance_' . $classtovalidate,
+				function() use ( $temp ) {
+					return $temp;
+				}
+			);
 		}
-
-		$temp->initialize();
 	}
 
 	/**
